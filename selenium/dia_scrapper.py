@@ -1,3 +1,4 @@
+import re
 import sys
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -13,20 +14,18 @@ def scrape_jumbo(key_to_scrape: str):
     # Open the Coto website
     driver.get("https://diaonline.supermercadosdia.com.ar/")
 
-    # number = re.findall(r'downshift-(\d+)-input', s)
-
     # Wait for the page to load
     wait = WebDriverWait(driver, 10)
 
     # Find the search input field and enter "coca cola"
-    search_input = None
+    input_id = re.search(r'downshift-(\d+)-input', driver.page_source)
+    
+    try:
+        search_input = wait.until(EC.presence_of_element_located((By.ID, f"{input_id.group(0)}")))
 
-    for i in range(0,4):
-        try:
-            search_input = wait.until(EC.presence_of_element_located((By.ID, "downshift-"+str(i)+"-input")))
-            break
-        except TimeoutException:
-            pass
+    except TimeoutException:
+        print("No se encontró el input")
+        return
 
     search_input.send_keys(key_to_scrape)
     search_input.send_keys(Keys.ENTER)
